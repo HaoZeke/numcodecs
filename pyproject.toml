@@ -156,6 +156,7 @@ filterwarnings = [
 
 [tool.cibuildwheel]
 environment = { DISABLE_NUMCODECS_AVX2=1 }
+enable = ["cpython-freethreading"]
 [tool.cibuildwheel.macos]
 # cibuildwheel uses 3.12 for the Python driver, which supports High Sierra and later
 # https://github.com/pypa/cibuildwheel/blob/ee63bf16da6cddfb925f542f2c7b59ad50e93969/action.yml#L31
