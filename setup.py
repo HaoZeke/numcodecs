@@ -10,6 +10,15 @@ from Cython.Distutils.build_ext import new_build_ext as build_ext
 from setuptools import Extension, setup
 from setuptools.errors import CCompilerError, ExecError, PlatformError
 
+from Cython.Compiler.Version import version as cython_version
+from packaging.version import Version
+
+# free threading additions
+compiler_directives = dict()
+
+if Version(cython_version) >= Version("3.1.0"):
+    compiler_directives["freethreading_compatible"] = True
+
 # determine CPU support for SSE2 and AVX2
 cpu_info = cpuinfo.get_cpu_info()
 flags = cpu_info.get('flags', [])
@@ -318,6 +327,10 @@ class BuildFailed(Exception):
 
 class ve_build_ext(build_ext):
     # This class allows C extension building to fail.
+
+    def initialize_options(self):
+        super().initialize_options()
+        self.cython_compiler_directives = compiler_directives
 
     def run(self):
         try:
