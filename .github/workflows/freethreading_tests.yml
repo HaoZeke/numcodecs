@@ -60,6 +60,7 @@ jobs:
       - name: Editable build
         run: |
           uv pip install -v -e .[test,test_extras,crc32c]
+          CFLAGS="-std=c17 -D_POSIX_C_SOURCE=200809L" uv pip install --verbose --no-build-isolation .
       - name: Run Tests
         run: |
           uv run --no-project python -m pytest --parallel-threads=2 --iterations=2 -v -s --timeout=600 --durations=10 -m "not thread_unsafe"
