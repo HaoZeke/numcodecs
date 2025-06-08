@@ -31,11 +31,13 @@ jobs:
         with:
           submodules: true
       - name: Set up Conda
-        uses: conda-incubator/setup-miniconda@v3.1.1
+        uses: conda-incubator/setup-miniconda@v3.2.0
         with:
           channels: conda-forge
           miniforge-version: latest
-          python-version: '3.13'
+      - uses: actions/setup-python@v5.6.0
+        with:
+          python-version: 3.13t
       - name: Disable Coverage
         run: |
           perl -i -ne 'print unless /--cov/' pyproject.toml
