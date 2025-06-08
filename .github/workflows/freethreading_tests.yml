@@ -1,5 +1,7 @@
 name: Free Threading Tests
 on: [push, pull_request]
+env:
+  UV_SYSTEM_PYTHON: 1
 jobs:
   freethreading_tests:
     name: Free Threaded Build ${{ matrix.os.emoji }} ${{ matrix.os.name }} ${{ matrix.python }}
@@ -28,20 +30,15 @@ jobs:
       - uses: actions/checkout@v4
         with:
           submodules: true
-      - name: Install uv and set the python version
-        uses: astral-sh/setup-uv@v5
-        with:
-          version: "0.7.2"
-          python-version: 3.13t
-          enable-cache: false
-      - name: Disable Coverage
-        run: |
-          perl -i -ne 'print unless /--cov/' pyproject.toml
       - name: Set up Conda
         uses: conda-incubator/setup-miniconda@v3.1.1
         with:
           channels: conda-forge
           miniforge-version: latest
+          python-version: '3.13'
+      - name: Disable Coverage
+        run: |
+          perl -i -ne 'print unless /--cov/' pyproject.toml
       - name: Install compilers
         run: conda install -y c-compiler cxx-compiler
       - name: Install clang
@@ -52,15 +49,13 @@ jobs:
           conda info
           conda config --show-sources
           conda list --show-channel-urls
-      - name: Set up Python
-        run: uv python install
-      - name: Install Dependencies
+      - name: Build
         run: |
-          uv pip install pytest-timeout pytest-run-parallel "zarr>=3"
-      - name: Editable build
-        run: |
-          uv pip install -v -e .[test,test_extras,crc32c]
-          CFLAGS="-std=c17 -D_POSIX_C_SOURCE=200809L" uv pip install --verbose --no-build-isolation .
+          python -mpip install -v "setuptools>=77" "setuptools-scm[toml]>=6.2" Cython "py-cpuinfo" "numpy>2" packaging
+          export DISABLE_NUMCODECS_AVX2=""
+          export CFLAGS="-std=c17 -D_POSIX_C_SOURCE=200809L"
+          python -mpip install --verbose -e .[test,test_extras,crc32c]
       - name: Run Tests
         run: |
-          uv run --no-project python -m pytest --parallel-threads=2 --iterations=2 -v -s --timeout=600 --durations=10 -m "not thread_unsafe"
+          python -mpip install pytest-timeout pytest-durations pytest-run-parallel
+          python -m pytest --parallel-threads=2 --iterations=2 -v -s --timeout=600 --durations=10 -m "not thread_unsafe"
